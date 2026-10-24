@@ -15,14 +15,23 @@ export default defineBackground(() => {
   });
 });
 
-const GEMINI_API_KEY = 'AIzaSyAItRaWqVWSlM1BYH1-9fvfDx02TA2-Evg';
-
-// Cascade across high-performance models
-const MODELS_CASCADE = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.7-flash'];
+// Cascade across models with active quota
+const MODELS_CASCADE = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-3.7-flash'];
 
 async function handleSolveMCQ(questionText: string) {
   if (!questionText || !questionText.trim()) {
     return { success: false, error: 'Empty text selected' };
+  }
+
+  // Retrieve key securely from Chrome private local storage
+  const storageData = await chrome.storage.local.get(['gemini_api_key']);
+  const apiKey = (storageData.gemini_api_key as string | undefined)?.trim();
+
+  if (!apiKey) {
+    return {
+      success: false,
+      error: 'API key needed (open extension popup)',
+    };
   }
 
   const prompt = `You are a high-speed exam assistant. A student highlighted this multiple choice question (MCQ) or quiz problem on their screen.
@@ -43,7 +52,7 @@ ${questionText}
   let lastErrorMsg = 'Failed to connect to AI server.';
 
   for (const model of MODELS_CASCADE) {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     try {
       const response = await fetch(endpoint, {

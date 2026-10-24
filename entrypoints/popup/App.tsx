@@ -11,7 +11,7 @@ interface HistoryItem {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'solve' | 'history'>('solve');
+  const [activeTab, setActiveTab] = useState<'solve' | 'history' | 'settings'>('solve');
   
   // Manual solve state
   const [manualQuestion, setManualQuestion] = useState('');
@@ -26,13 +26,16 @@ export default function App() {
   // History & Usage state
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [usedToday, setUsedToday] = useState(0);
+  const [apiKey, setApiKey] = useState('');
+  const [savedKey, setSavedKey] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const DAILY_LIMIT = 1500;
 
-  // Load history and usage from chrome.storage
+  // Load history, usage, and key from chrome.storage
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
       const today = new Date().toISOString().slice(0, 10);
-      chrome.storage.local.get(['solved_history', 'gemini_usage'], (res) => {
+      chrome.storage.local.get(['solved_history', 'gemini_usage', 'gemini_api_key'], (res) => {
         if (Array.isArray(res.solved_history)) {
           setHistory(res.solved_history as HistoryItem[]);
         }
@@ -40,9 +43,25 @@ export default function App() {
         if (usage && usage.date === today) {
           setUsedToday(usage.count || 0);
         }
+        if (typeof res.gemini_api_key === 'string' && res.gemini_api_key) {
+          setSavedKey(res.gemini_api_key);
+          setApiKey(res.gemini_api_key);
+        }
       });
     }
   }, []);
+
+  const handleSaveKey = () => {
+    const trimmed = apiKey.trim();
+    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+      chrome.storage.local.set({ gemini_api_key: trimmed }, () => {
+        setSavedKey(trimmed);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2000);
+        if (trimmed) setActiveTab('solve');
+      });
+    }
+  };
 
   const handleManualSolve = () => {
     if (!manualQuestion.trim()) return;
@@ -103,7 +122,11 @@ export default function App() {
           <span className="brand-title">AI MCQ Solver</span>
         </div>
 
-        <span className="status-badge active">● AI Ready</span>
+        {savedKey ? (
+          <span className="status-badge active">● AI Ready</span>
+        ) : (
+          <span className="status-badge missing">● Key Needed</span>
+        )}
       </header>
 
       {/* Free Tier Usage Meter */}
@@ -146,6 +169,12 @@ export default function App() {
           onClick={() => setActiveTab('history')}
         >
           📜 History ({history.length})
+        </button>
+        <button
+          className={`tab-nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          ⚙️ Key
         </button>
       </div>
 
@@ -221,6 +250,40 @@ export default function App() {
               ))}
             </>
           )}
+        </div>
+      )}
+
+      {/* TAB 3: SETTINGS / KEY */}
+      {activeTab === 'settings' && (
+        <div className="api-card">
+          <div className="card-title-row">
+            <span>Gemini API Key</span>
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noreferrer"
+              className="api-link"
+            >
+              Get Free Key ↗
+            </a>
+          </div>
+
+          <div className="input-row">
+            <input
+              type="password"
+              className="api-input"
+              placeholder="Paste your Gemini API key (AQ.Ab8...)"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+            <button className="primary-btn" onClick={handleSaveKey}>
+              {saveSuccess ? 'Saved ✓' : 'Save'}
+            </button>
+          </div>
+
+          <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.4 }}>
+            Stored locally and privately in this browser's memory only. Never pushed to GitHub.
+          </p>
         </div>
       )}
     </div>
