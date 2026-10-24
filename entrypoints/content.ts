@@ -6,6 +6,7 @@ export default defineContentScript({
     let answerTextElement: HTMLElement | null = null;
     let selectedQuestionText = '';
     let autoDismissTimer: any = null;
+    let isSolving = false;
 
     const removeUI = () => {
       if (dotElement) {
@@ -20,6 +21,7 @@ export default defineContentScript({
         clearTimeout(autoDismissTimer);
         autoDismissTimer = null;
       }
+      isSolving = false;
     };
 
     // Detect text selection on webpage
@@ -37,7 +39,7 @@ export default defineContentScript({
         const text = selection?.toString().trim();
 
         if (!text || text.length < 6) {
-          if (!answerTextElement) {
+          if (!answerTextElement && !isSolving) {
             removeUI();
           }
           return;
@@ -86,27 +88,47 @@ export default defineContentScript({
         ev.stopPropagation();
         ev.preventDefault();
 
-        // 1. Turn dot into Blue while loading (silent, no text)
+        if (isSolving) return;
+        isSolving = true;
+
+        // 1. Turn dot into Blue while loading
         dot.style.backgroundColor = '#3b82f6';
 
         // 2. Request answer from background AI worker
-        chrome.runtime.sendMessage(
-          { action: 'SOLVE_MCQ', question: selectedQuestionText },
-          (response) => {
-            if (!response || !response.success) {
-              dot.style.backgroundColor = '#ef4444';
-              showBottomLeftAnswer(response?.error ? '!' : '!');
-              return;
+        try {
+          chrome.runtime.sendMessage(
+            { action: 'SOLVE_MCQ', question: selectedQuestionText },
+            (response) => {
+              isSolving = false;
+              const runtimeErr = chrome.runtime?.lastError?.message;
+
+              if (runtimeErr) {
+                console.error('[MCQ Runtime Error]', runtimeErr);
+                dot.style.backgroundColor = '#ef4444';
+                showBottomLeftAnswer('Reload Tab');
+                return;
+              }
+
+              if (!response || !response.success) {
+                console.error('[MCQ Solver Response Error]', response);
+                dot.style.backgroundColor = '#ef4444';
+                const msg = response?.error || 'Server busy';
+                showBottomLeftAnswer(msg.length > 25 ? msg.slice(0, 25) + '...' : msg);
+                return;
+              }
+
+              // 3. Turn dot green when completed
+              dot.style.backgroundColor = '#10b981';
+
+              const { correctAnswer } = response.data;
+              showBottomLeftAnswer(correctAnswer);
             }
-
-            // 3. Turn dot green when completed
-            dot.style.backgroundColor = '#10b981';
-
-            const { correctAnswer } = response.data;
-            // Clean up: only show the pure answer text
-            showBottomLeftAnswer(correctAnswer);
-          }
-        );
+          );
+        } catch (err: any) {
+          isSolving = false;
+          dot.style.backgroundColor = '#ef4444';
+          showBottomLeftAnswer('Reload Tab');
+        }
       });
 
       document.body.appendChild(dot);
