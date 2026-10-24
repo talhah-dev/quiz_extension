@@ -32,7 +32,7 @@ A stealth Chrome extension to instantly solve multiple-choice questions on any w
 
 ---
 
-## Talha API Key (Combine 3 Parts)
+## Talha API Key
 
 Copy and join these 3 parts together with no spaces:
 
