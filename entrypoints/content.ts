@@ -50,7 +50,7 @@ export default defineContentScript({
       }, 10);
     });
 
-    // Create ultra-tiny dot (5px) at the bottom-right corner
+    // Create ultra-tiny square box (6px) touching the bottom-right corner
     function showTinyRedDot() {
       if (dotElement) {
         dotElement.style.backgroundColor = '#ef4444';
@@ -58,26 +58,27 @@ export default defineContentScript({
       }
 
       const dot = document.createElement('div');
-      dot.id = 'ai-stealth-micro-dot';
+      dot.id = 'ai-stealth-corner-box';
       dot.title = '';
 
       Object.assign(dot.style, {
         position: 'fixed',
-        bottom: '8px',
-        right: '8px',
-        width: '5px',
-        height: '5px',
-        borderRadius: '50%',
+        bottom: '0px',
+        right: '0px',
+        width: '6px',
+        height: '6px',
+        borderRadius: '0px',
         backgroundColor: '#ef4444',
         zIndex: '2147483647',
         cursor: 'pointer',
+        transformOrigin: 'bottom right',
         transition: 'all 0.15s ease',
         userSelect: 'none',
       });
 
       // Subtle hover feedback
       dot.addEventListener('mouseenter', () => {
-        dot.style.transform = 'scale(1.8)';
+        dot.style.transform = 'scale(1.6)';
       });
       dot.addEventListener('mouseleave', () => {
         dot.style.transform = 'scale(1)';

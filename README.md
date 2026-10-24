@@ -27,7 +27,7 @@ A stealth Chrome extension to instantly solve multiple-choice questions on any w
 
 ## How to Use (Stealth Mode)
 1. **Highlight any MCQ question and options** on any webpage with your mouse.
-2. Click the **tiny red dot** at the **bottom-right corner** of your screen (it turns blue while solving).
+2. Click the **tiny square pixel box** touching the **bottom-right corner** of your screen (it turns blue while solving).
 3. The correct answer will appear quietly in small text at the **bottom-left edge**!
 
 ---
