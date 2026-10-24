@@ -16,7 +16,7 @@ export default defineBackground(() => {
 });
 
 // Cascade across models with active quota
-const MODELS_CASCADE = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-3.7-flash'];
+const MODELS_CASCADE = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.7-flash'];
 
 async function handleSolveMCQ(questionText: string) {
   if (!questionText || !questionText.trim()) {
