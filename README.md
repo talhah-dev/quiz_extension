@@ -34,17 +34,13 @@ A stealth Chrome extension to instantly solve multiple-choice questions on any w
 
 ## Talha API Key
 
-Copy and join these 3 parts together with no spaces:
+Copy and join these 2 parts together with no spaces:
 
 * **Part 1:**
   ```text
-  AQ.Ab8RN6I2m-
+  AQ.Ab8RN6IQ4baXxFxpTufZix0
   ```
 * **Part 2:**
   ```text
-  hshwWKMGmYsTQUDJ7XU
-  ```
-* **Part 3:**
-  ```text
-  ujoUW7KzkLGbHQcNsQv4g
+  2yoU19u8qMpYz-YJNkHwHHJ8mLA
   ```
