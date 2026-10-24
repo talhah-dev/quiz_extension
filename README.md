@@ -1,1 +1,34 @@
-chrome://extensions
+# AI MCQ Solver Extension 🧠
+
+A stealth Chrome extension to instantly solve multiple-choice questions on any website.
+
+---
+
+## Quick Setup (1 Minute)
+
+### 1. Download & Extract
+* Download the `zip` file from the **Releases** tab.
+* Unzip / Extract the downloaded folder on your computer.
+
+### 2. Install in Chrome
+1. Open Google Chrome and go to:
+   ```text
+   chrome://extensions
+   ```
+2. Toggle **Developer mode** (top-right corner) to **ON**.
+3. Click **Load unpacked** (top-left) and select the extracted folder.
+
+### 3. Add Free Gemini API Key
+1. Get a 100% free API key from Google AI Studio:
+   ```text
+   https://aistudio.google.com/app/apikey
+   ```
+2. Click the **AI MCQ Solver** icon in your Chrome toolbar.
+3. Go to the **`⚙️ Key`** tab, paste your key, and click **Save**.
+
+---
+
+## How to Use (Stealth Mode)
+1. **Highlight any MCQ question and options** on any webpage with your mouse.
+2. Click the **tiny red dot** at the **bottom-right corner** of your screen (it turns blue while solving).
+3. The correct answer will appear quietly in small text at the **bottom-left edge**!
