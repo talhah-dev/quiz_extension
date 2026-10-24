@@ -11,7 +11,8 @@ interface HistoryItem {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'solve' | 'history' | 'settings'>('solve');
+  // Default tab is settings (Key tab) as requested
+  const [activeTab, setActiveTab] = useState<'settings' | 'solve' | 'history'>('settings');
   
   // Manual solve state
   const [manualQuestion, setManualQuestion] = useState('');
@@ -51,14 +52,15 @@ export default function App() {
     }
   }, []);
 
-  const handleSaveKey = () => {
-    const trimmed = apiKey.trim();
+  const handleSaveKey = (keyToSave?: string) => {
+    const trimmed = (keyToSave !== undefined ? keyToSave : apiKey).trim();
+    if (!trimmed) return;
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
       chrome.storage.local.set({ gemini_api_key: trimmed }, () => {
         setSavedKey(trimmed);
+        setApiKey(trimmed);
         setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 2000);
-        if (trimmed) setActiveTab('solve');
+        setTimeout(() => setSaveSuccess(false), 2500);
       });
     }
   };
@@ -156,13 +158,19 @@ export default function App() {
         </div>
       </div>
 
-      {/* Nav Tabs */}
+      {/* Subtle Tab Navigation Links */}
       <div className="tab-nav">
+        <button
+          className={`tab-nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          ⚙️ Key
+        </button>
         <button
           className={`tab-nav-btn ${activeTab === 'solve' ? 'active' : ''}`}
           onClick={() => setActiveTab('solve')}
         >
-          ⚡ Solve
+          ⚡ Test
         </button>
         <button
           className={`tab-nav-btn ${activeTab === 'history' ? 'active' : ''}`}
@@ -170,21 +178,59 @@ export default function App() {
         >
           📜 History ({history.length})
         </button>
-        <button
-          className={`tab-nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          ⚙️ Key
-        </button>
       </div>
 
-      {/* TAB 1: SOLVE */}
+      {/* TAB 1: KEY (DEFAULT) */}
+      {activeTab === 'settings' && (
+        <div className="api-card">
+          <div className="card-title-row">
+            <span>Gemini API Key</span>
+            {saveSuccess ? (
+              <span style={{ color: '#34d399', fontSize: 11, fontWeight: 700 }}>Saved! ✓</span>
+            ) : (
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noreferrer"
+                className="api-link"
+              >
+                Get Free Key ↗
+              </a>
+            )}
+          </div>
+
+          <div className="input-row">
+            <input
+              type="password"
+              className="api-input"
+              placeholder="Paste key and press Enter..."
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSaveKey();
+                }
+              }}
+            />
+            <button className="primary-btn" onClick={() => handleSaveKey()}>
+              {saveSuccess ? 'Saved ✓' : 'Save'}
+            </button>
+          </div>
+
+          <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.4 }}>
+            Press <strong>Enter</strong> to save. Stored privately on this computer only.
+          </p>
+        </div>
+      )}
+
+      {/* TAB 2: TEST SOLVER */}
       {activeTab === 'solve' && (
         <div className="manual-box">
           <div className="tip-card">
             <span>💡</span>
             <div>
-              <strong>Highlight anywhere:</strong> On any website, simply <strong>highlight the question</strong> with your mouse and click the <strong>tiny red dot</strong> in the bottom-right corner!
+              <strong>Highlight anywhere:</strong> On any website, simply <strong>highlight the question</strong> with your mouse and click the <strong>tiny corner square</strong> at the bottom-right!
             </div>
           </div>
 
@@ -224,7 +270,7 @@ export default function App() {
         </div>
       )}
 
-      {/* TAB 2: HISTORY */}
+      {/* TAB 3: HISTORY */}
       {activeTab === 'history' && (
         <div className="history-list">
           {history.length === 0 ? (
@@ -250,40 +296,6 @@ export default function App() {
               ))}
             </>
           )}
-        </div>
-      )}
-
-      {/* TAB 3: SETTINGS / KEY */}
-      {activeTab === 'settings' && (
-        <div className="api-card">
-          <div className="card-title-row">
-            <span>Gemini API Key</span>
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noreferrer"
-              className="api-link"
-            >
-              Get Free Key ↗
-            </a>
-          </div>
-
-          <div className="input-row">
-            <input
-              type="password"
-              className="api-input"
-              placeholder="Paste your Gemini API key (AQ.Ab8...)"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <button className="primary-btn" onClick={handleSaveKey}>
-              {saveSuccess ? 'Saved ✓' : 'Save'}
-            </button>
-          </div>
-
-          <p style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.4 }}>
-            Stored locally and privately in this browser's memory only. Never pushed to GitHub.
-          </p>
         </div>
       )}
     </div>
